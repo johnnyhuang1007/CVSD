@@ -105,17 +105,24 @@ module testbed;
 				while(1)begin//IM_addr < 1024 && mips_status !== 3'd4 && mips_status !== 3'd5
 					@(negedge clk);
 					if(mips_status_valid == 1)begin
+						
 						for(int reg_loc = 0 ; reg_loc < 32 ; reg_loc = reg_loc + 1)begin
 							status = $fscanf(file, "%d", reg_signed_golden[reg_loc]);
 						end
 						for(int reg_loc = 0 ; reg_loc < 32 ; reg_loc = reg_loc + 1)begin
 							status = $fscanf(file, "%d", reg_float_golden[reg_loc]);
 						end
-						//$display("EXCUTED INSTRUCTION CNT: %d", cnt);
+						
+						$display("EXCUTED INSTRUCTION CNT: %d	,IM_addr: %d", cnt, IM_addr);
 						cnt = cnt+1;
 						
 						for(int reg_loc = 0 ; reg_loc < 32 ; reg_loc = reg_loc + 1)begin
 							if(reg_signed_core[reg_loc] !== reg_signed_golden[reg_loc])begin
+								`ifdef ALL
+									$display("	Pattern : %3s ", sTmp);
+								`else
+									$display("	Pattern : %3s ", pattern_num);
+								`endif
 								$write("%c[1;31m",27);
 								$display("Reg[%0d]: Error! Golden = %d ,Yours = %d", reg_loc, reg_signed_golden[reg_loc], reg_signed_core[reg_loc]);
 								$write("%c[0m",27);
@@ -123,6 +130,11 @@ module testbed;
 								$finish;
 							end
 							if(reg_float_core[reg_loc] !== reg_float_golden[reg_loc])begin
+								`ifdef ALL
+									$display("	Pattern : %3s ", sTmp);
+								`else
+									$display("	Pattern : %3s ", pattern_num);
+								`endif
 								$write("%c[1;31m",27);
 								$display("Reg[%0d]: Error! Golden = %d ,Yours = %d", reg_loc, reg_float_golden[reg_loc], reg_float_core[reg_loc]);
 								$write("%c[0m",27);
@@ -187,13 +199,13 @@ module testbed;
 			$readmemb({"../00_TB/PATTERN/p", sTmp, "/inst.dat"}, u_data_mem.mem_r);
 			$readmemb({"../00_TB/PATTERN/p", sTmp, "/data.dat"}, golden_IM_DM);
 			$readmemb({"../00_TB/PATTERN/p", sTmp, "/status.dat"}, golden_Status);
-			file = $fopen({"../00_TB/PATTERN/", sTmp, "/reg_trace.dat"}, "r");
+			file = $fopen({"../00_TB/split/p", sTmp, "/reg_trace.dat"}, "r");
 		`else
 			$readmemb({"../00_TB/PATTERN/", pattern_num, "/inst.dat"}, u_data_mem.mem_r);
 			$readmemb({"../00_TB/PATTERN/", pattern_num, "/data.dat"}, golden_IM_DM);
 			$readmemb({"../00_TB/PATTERN/", pattern_num, "/status.dat"}, golden_Status);
 			$display({"../00_TB/PATTERN/", pattern_num, "/reg_trace.dat"});
-			file = $fopen({"../00_TB/PATTERN/", pattern_num, "/reg_trace.dat"}, "r");
+			file = $fopen({"../00_TB/split", pattern_num, "/reg_trace.dat"}, "r");
 		`endif
 	end
 	endtask
